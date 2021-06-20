@@ -12,6 +12,8 @@ module.exports = class extends Event {
 	}
 
 	async run() {
+		this.client.utils.loadInteractions();
+
 		console.log([
 			`[${chalk.grey('INFO')}] Logged in as ${chalk.redBright(`${this.client.user.tag}`)}`,
 			`[${chalk.grey('INFO')}] Loaded ${this.client.commands.size.formatNumber()} commands & ${this.client.events.size.formatNumber()} events!`,

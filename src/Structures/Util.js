@@ -2,6 +2,7 @@ const path = require('path');
 const { promisify } = require('util');
 const glob = promisify(require('glob'));
 const Command = require('./Command.js');
+const Interaction = require('./Interaction.js');
 const Event = require('./Event.js');
 
 module.exports = class Util {
@@ -94,6 +95,26 @@ module.exports = class Util {
 						this.client.aliases.set(alias, command.name);
 					}
 				}
+			}
+		});
+	}
+
+	async loadInteractions() {
+		return glob(`${this.directory}Modules/Interactions/**/*.js`).then(interactions => {
+			for (const interactionFile of interactions) {
+				delete require.cache[interactionFile];
+				const { name } = path.parse(interactionFile);
+				const File = require(interactionFile);
+				if (!this.isClass(File)) throw new TypeError(`Interaction ${name} doesn't export a class.`);
+				const interaction = new File(this.client, name.toLowerCase());
+				if (!(interaction instanceof Interaction)) throw new TypeError(`Interaction ${name} doesn't belong in Commands.`);
+				this.client.interactions.set(interaction.name, interaction);
+				const data = {
+					name: interaction.name,
+					description: interaction.description,
+					options: interaction.options
+				};
+				this.client.application?.commands.create(data);
 			}
 		});
 	}
